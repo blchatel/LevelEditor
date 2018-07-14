@@ -118,7 +118,7 @@ class OptionsPanel extends JPanel {
 
 
 
-
+    //
     private JPanel buildToolPanel(Dimension d) {
 
 	    JPanel toolPanel = new JPanel();
