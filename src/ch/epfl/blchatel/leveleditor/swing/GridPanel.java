@@ -45,6 +45,9 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 	private int deltaDragX, deltaDragY;
 	///
 	private OptionsPanel.Tool tool;
+	///
+	private double magnifier;
+
 
 	/**
 	 * Default GridPanel Constructor
@@ -83,6 +86,8 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 		drawForeground = true;
 		drawBehavior = true;
 
+		magnifier = 1;
+
 		// Add the mouse Listeners
 		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
@@ -118,10 +123,11 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 			@Override
 			public void mousePressed(MouseEvent e){
 
-				if(SwingUtilities.isLeftMouseButton(e) && image != null && mouseBrush != null
+				if(image != null && mouseBrush != null
 						&& e.getX() > DELTA && e.getX() < image.pixelWidth+DELTA
 						&& e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA) {
 
+					if(SwingUtilities.isLeftMouseButton(e))
 					switch(tool){
 						case BRUSH:
 							drawBrush(pixelBrushX-DELTA, pixelBrushY-DELTA - mouseBrush.pixelHeight + 1,
@@ -133,6 +139,21 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 							fillBrush(pixelBrushX-DELTA, pixelBrushY-DELTA -mouseBrush.pixelHeight+1,
                                     cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 							break;
+						case ZOOM:
+							magnifier *= 1.1;
+							break;
+						default:
+							System.out.println("Unknown Tools");
+							break;
+					}
+					else if(SwingUtilities.isRightMouseButton(e))
+					switch(tool){
+						case BRUSH:
+						case FILL:
+							break;
+						case ZOOM:
+							magnifier /= 1.1;
+							break;
 						default:
 							System.out.println("Unknown Tools");
 							break;
@@ -141,8 +162,6 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 			}
 		});
 	}
-
-
 
 
 	/**

@@ -5,6 +5,7 @@ import ch.epfl.blchatel.leveleditor.LayerImage;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -54,8 +55,10 @@ class OptionsPanel extends JPanel {
 
     public enum Tool{
 
+        NONE("icons/none_32.png"),
         BRUSH("icons/paint_32.png"),
-        FILL("icons/fill_32.png");
+        FILL("icons/fill_32.png"),
+        ZOOM("icons/zoom_32.png");
 
         private final ImageIcon icon;
 
@@ -90,6 +93,10 @@ class OptionsPanel extends JPanel {
         }
     }
 
+    private final Tools tools;
+
+
+
 	/**
 	 * Default OptionPanel Constructor
 	 * @param d (Dimension) : dimension of this
@@ -107,6 +114,8 @@ class OptionsPanel extends JPanel {
 
         // - Init listeners list
         listeners = new LinkedList<>();
+
+        tools = new Tools();
 
         setBorder(BorderFactory.createTitledBorder("Options"));
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -127,37 +136,55 @@ class OptionsPanel extends JPanel {
         toolPanel.setMinimumSize(d);
         toolPanel.setLayout(new GridLayout(4, 6));
 
-        final JButton brushButton = new JButton();
-        brushButton.setIcon(Tool.BRUSH.getIcon());
-        brushButton.setBackground(Color.gray);
-        final JButton fillButton = new JButton();
-        fillButton.setIcon(Tool.FILL.getIcon());
-        fillButton.setBackground(Color.lightGray);
+        toolPanel.add(tools.add(Tool.BRUSH, true));
+        toolPanel.add(tools.add(Tool.FILL));
+        toolPanel.add(tools.add(Tool.ZOOM));
 
-        brushButton.addActionListener(e -> {
-            brushButton.setBackground(Color.gray);
-            fillButton.setBackground(Color.lightGray);
-            for(Listener l : listeners){
-                l.onToolChange(Tool.BRUSH);
-            }
-        });
-
-        fillButton.addActionListener(e -> {
-            brushButton.setBackground(Color.lightGray);
-            fillButton.setBackground(Color.gray);
-            for(Listener l : listeners){
-                l.onToolChange(Tool.FILL);
-            }
-        });
-
-        toolPanel.add(brushButton);
-        toolPanel.add(fillButton);
-        for(int i = 0; i < 22; i++){
-            toolPanel.add(new JButton());
+        for(int i = 0; i < 21; i++){
+            toolPanel.add(tools.add(Tool.NONE, false, false));
         }
-
         return toolPanel;
     }
+
+
+    private class Tools extends ArrayList<JButton>{
+
+	    private final Color SELECTED_COLOR = Color.gray;
+	    private final Color BASIC_COLOR = Color.lightGray;
+
+        private JButton add(final Tool tool) {
+            return this.add(tool, false);
+        }
+
+        private JButton add(final Tool tool, boolean selected) {
+            return this.add(tool, selected, true);
+        }
+
+        private JButton add(final Tool tool, boolean selected, boolean enabled) {
+
+            final JButton jButton = new JButton();
+            jButton.setIcon(tool.getIcon());
+            jButton.setBackground(BASIC_COLOR);
+            if(selected)
+                jButton.setBackground(SELECTED_COLOR);
+            jButton.setEnabled(enabled);
+
+            jButton.addActionListener(e -> {
+                for(JButton b : this){
+                    b.setBackground(BASIC_COLOR);
+                }
+                jButton.setBackground(SELECTED_COLOR);
+
+                for(Listener l : listeners){
+                    l.onToolChange(tool);
+                }
+            });
+
+            add(jButton);
+            return jButton;
+        }
+    }
+
 
     private JPanel buildInputFieldsPanel(Dimension d) {
 
