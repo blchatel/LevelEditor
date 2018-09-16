@@ -4,6 +4,8 @@ import ch.epfl.blchatel.leveleditor.LayerImage;
 
 import java.awt.*;
 import javax.swing.*;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -29,6 +31,10 @@ public class BrushDropList extends JPanel {
          * @param brush (LayerImage): the selected Image
          */
         void onBrushSelected(LayerImage brush);
+
+        void onBackgroundToggeled(boolean isChecked);
+        void onForegroundToggeled(boolean isChecked);
+        void onBehaviorToggeled(boolean isChecked);
     }
     /// List of listeners
     private final List<Listener> listeners;
@@ -40,6 +46,10 @@ public class BrushDropList extends JPanel {
         listeners.add(l);
     }
 
+    // Active checkbox
+    private final JCheckBox backgroundCheckBox;
+    private final JCheckBox foregroundCheckBox;
+    private final JCheckBox behaviorCheckBox;
     /// Map of the brushes String -> LayerImage
     private final Map<String, LayerImage> brushesMap;
 
@@ -138,9 +148,24 @@ public class BrushDropList extends JPanel {
         Dimension d2 = new Dimension(d.width, (int)(d.height*0.95));
 
         JPanel checkboxPanel = new JPanel();
-        checkboxPanel.add(new JCheckBox("Background", true));
-        checkboxPanel.add(new JCheckBox("Foreground", true));
-        checkboxPanel.add(new JCheckBox("Behavior", true));
+        backgroundCheckBox = new JCheckBox("Background", true);
+        backgroundCheckBox.addItemListener(e -> {
+            for(Listener l : listeners)
+                l.onBackgroundToggeled(backgroundCheckBox.isSelected());
+        });
+        checkboxPanel.add(backgroundCheckBox);
+        foregroundCheckBox = new JCheckBox("Foreground", true);
+        foregroundCheckBox.addItemListener(e -> {
+            for(Listener l : listeners)
+                l.onForegroundToggeled(foregroundCheckBox.isSelected());
+        });
+        checkboxPanel.add(foregroundCheckBox);
+        behaviorCheckBox = new JCheckBox("Behavior", true);
+        behaviorCheckBox.addItemListener(e -> {
+            for(Listener l : listeners)
+                l.onBehaviorToggeled(behaviorCheckBox.isSelected());
+        });
+        checkboxPanel.add(behaviorCheckBox);
         checkboxPanel.setSize(d1);
         checkboxPanel.setMinimumSize(d1);
         checkboxPanel.setMaximumSize(d1);

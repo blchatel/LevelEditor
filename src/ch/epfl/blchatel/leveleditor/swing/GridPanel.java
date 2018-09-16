@@ -33,6 +33,8 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 	private LayerImage image;
 	/// The brush image (may be null)
 	private LayerImage mouseBrush;
+	//
+	private boolean drawBackground, drawForeground, drawBehavior;
     /// The current brush's position in the grid (cell coordinates)
     private int cellBrushX, cellBrushY;
 	/// The current brush's position in the grid (pixel of the bottom left corner of the cell)
@@ -59,8 +61,8 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 		setMaximumSize(d);
 		setPreferredSize(d);
 
-		maxCellsX = d.width / LayerImage.CELL_RESOLUTION;
-		maxCellsY = d.height / LayerImage.CELL_RESOLUTION;
+		maxCellsX = (d.width-2*DELTA) / LayerImage.CELL_RESOLUTION;
+		maxCellsY = (d.height-2*DELTA) / LayerImage.CELL_RESOLUTION;
 
 		// Init the brush position (not in the grid)
 		pixelBrushX = -1;
@@ -77,18 +79,24 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 		addTab("Foreground", null);
 		addTab("Behavior", null);
 
+		drawBackground = true;
+		drawForeground = true;
+		drawBehavior = true;
+
 		// Add the mouse Listeners
 		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
 			public void mouseDragged(MouseEvent e) {
 				super.mouseDragged(e);
 				if(SwingUtilities.isLeftMouseButton(e) && image != null && mouseBrush != null
-                        && e.getX()< image.pixelWidth && e.getY() < image.pixelHeight) {
+						&& e.getX() > DELTA && e.getX() < image.pixelWidth+DELTA
+						&& e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA) {
+
 					updateBrushPosition(e.getX(), e.getY());
 
 					if(Math.abs(pixelBrushX - lastDrawX) >= deltaDragX
 						|| Math.abs(pixelBrushY - lastDrawY) >= deltaDragY) {
-						drawBrush(pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1,
+						drawBrush(pixelBrushX-DELTA, pixelBrushY-DELTA - mouseBrush.pixelHeight + 1,
                                 cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 						lastDrawX = pixelBrushX;
 						lastDrawY = pixelBrushY;
@@ -99,7 +107,9 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				super.mouseMoved(e);
-				if(image != null && mouseBrush != null && e.getX() > DELTA && e.getX()< image.pixelWidth+DELTA && e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA)
+				if(image != null && mouseBrush != null
+						&& e.getX() > DELTA && e.getX() < image.pixelWidth+DELTA
+						&& e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA)
 					updateBrushPosition(e.getX(), e.getY());
 			}
 		});
@@ -108,16 +118,19 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 			@Override
 			public void mousePressed(MouseEvent e){
 
-				if(SwingUtilities.isLeftMouseButton(e) && image != null && mouseBrush != null) {
+				if(SwingUtilities.isLeftMouseButton(e) && image != null && mouseBrush != null
+						&& e.getX() > DELTA && e.getX() < image.pixelWidth+DELTA
+						&& e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA) {
+
 					switch(tool){
 						case BRUSH:
-							drawBrush(pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1,
+							drawBrush(pixelBrushX-DELTA, pixelBrushY-DELTA - mouseBrush.pixelHeight + 1,
                                     cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 							lastDrawX = pixelBrushX;
 							lastDrawY = pixelBrushY;
 							break;
 						case FILL:
-							fillBrush(pixelBrushX, pixelBrushY -mouseBrush.pixelHeight+1,
+							fillBrush(pixelBrushX-DELTA, pixelBrushY-DELTA -mouseBrush.pixelHeight+1,
                                     cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 							break;
 						default:
@@ -128,6 +141,9 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 			}
 		});
 	}
+
+
+
 
 	/**
 	 * Update the brush position (the bottom-left corner containing the mouse cursor)
@@ -140,8 +156,6 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 
 		pixelBrushX = DELTA + cellBrushX * LayerImage.CELL_RESOLUTION;
 		pixelBrushY = DELTA + cellBrushY * LayerImage.CELL_RESOLUTION + LayerImage.CELL_RESOLUTION - 1;
-
-		System.out.println("("+pixelBrushX+", "+pixelBrushY+")");
 
 		repaint();
 	}
@@ -158,20 +172,24 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 	private void drawBrush(int pixelX, int pixelY, int cellX, int cellY) {
         // Draw the image on to the buffered image
         Graphics2D bGr = image.background.createGraphics();
-        bGr.drawImage(mouseBrush.background, pixelX, pixelY, null);
-        bGr.dispose();
-        repaint();
-
-        if (mouseBrush.foreground != null){
+        if(drawBackground) {
+			bGr.drawImage(mouseBrush.background, pixelX, pixelY, null);
+			bGr.dispose();
+			repaint();
+		}
+        if (drawForeground && mouseBrush.foreground != null){
             bGr = image.foreground.createGraphics();
             bGr.drawImage(mouseBrush.foreground, pixelX, pixelY, null);
             bGr.dispose();
         }
 
-        bGr = image.behavior.createGraphics();
-        bGr.drawImage(mouseBrush.behavior, cellX, cellY, null);
-        bGr.dispose();
-    }
+        if(drawBehavior) {
+			bGr = image.behavior.createGraphics();
+			bGr.drawImage(mouseBrush.behavior, cellX, cellY, null);
+			bGr.dispose();
+		}
+		repaint();
+	}
 
 	/**
 	 * Fill the image with the brush image from position (x, y) which is the top-left corner of the drawn image
@@ -264,6 +282,9 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 		}
 	}
 
+
+	/// GridPanel implements Menu.Listener
+
 	@Override
 	public void onOpenLVE(LayerImage lve) {
 
@@ -303,10 +324,31 @@ public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropLi
 		return onSaveLVE();
 	}
 
+	/// GridPanel implements BrushDropList.Listener
+
 	@Override
 	public void onBrushSelected(LayerImage brush) {
 		this.mouseBrush = brush;
 	}
+
+	@Override
+	public void onBackgroundToggeled(boolean isChecked) {
+		drawBackground = isChecked;
+	}
+
+
+	@Override
+	public void onForegroundToggeled(boolean isChecked) {
+		drawForeground = isChecked;
+	}
+
+	@Override
+	public void onBehaviorToggeled(boolean isChecked) {
+		drawBehavior = isChecked;
+	}
+
+
+	/// GridPanel implements OptionsPanel.Listener
 
 	@Override
 	public void onDragXChange(int newValue) {
