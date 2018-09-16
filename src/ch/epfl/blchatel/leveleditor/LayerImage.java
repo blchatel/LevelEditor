@@ -98,15 +98,21 @@ public class LayerImage {
      * Convert an Image to a BufferedImage
      *
      * @param img (Image) : the input Image (not null)
-     * @return (BufferedImage): the output Image (not null)
+     * @return (BufferedImage): the output Image (may be null)
      */
     private static BufferedImage toBufferedImage(Image img) {
         if (img instanceof BufferedImage) {
             return (BufferedImage) img;
         }
 
+        int width = img.getWidth(null);
+        int height = img.getHeight(null);
+
+        if(width < 1 || height < 1)
+            return null;
+
         // Create a buffered image with transparency
-        BufferedImage bufferedImage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
         // Draw the image on to the buffered image
         Graphics2D bGr = bufferedImage.createGraphics();

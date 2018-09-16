@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.image.BufferedImage;
 import java.io.File;
 
 
@@ -16,7 +17,10 @@ import java.io.File;
  *     - so maxCellsX and maxCellsY are defined
  * The GridPanel is a Menu.Listener and BrushDropList.Listener
  */
-public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Listener, OptionsPanel.Listener{
+public class GridPanel extends JTabbedPane implements Menu.Listener, BrushDropList.Listener, OptionsPanel.Listener{
+
+	// delta x and y in px
+	private final static int DELTA = 40;
 
 	/// Max number of cells we can put in the X direction without overflow
 	private final int maxCellsX;
@@ -69,6 +73,10 @@ public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Li
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(tool.getScaledImage(
 		        LayerImage.CELL_RESOLUTION, LayerImage.CELL_RESOLUTION), new Point(0,0),"tool cursor"));
 
+		addTab("Background", null);
+		addTab("Foreground", null);
+		addTab("Behavior", null);
+
 		// Add the mouse Listeners
 		addMouseMotionListener(new MouseMotionAdapter() {
 			@Override
@@ -91,7 +99,7 @@ public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Li
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				super.mouseMoved(e);
-				if(image != null && mouseBrush != null && e.getX()< image.pixelWidth && e.getY() < image.pixelHeight)
+				if(image != null && mouseBrush != null && e.getX() > DELTA && e.getX()< image.pixelWidth+DELTA && e.getY() > DELTA && e.getY() < image.pixelHeight+DELTA)
 					updateBrushPosition(e.getX(), e.getY());
 			}
 		});
@@ -127,11 +135,13 @@ public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Li
 	 * @param y (int) : Y-position of the mouse in this GridPanel in pixel
 	 */
 	private void updateBrushPosition(int x, int y){
-        cellBrushX = (x / LayerImage.CELL_RESOLUTION);
-        cellBrushY = (y / LayerImage.CELL_RESOLUTION);
+        cellBrushX = ((x-DELTA) / LayerImage.CELL_RESOLUTION);
+        cellBrushY = ((y-DELTA) / LayerImage.CELL_RESOLUTION);
 
-		pixelBrushX = cellBrushX * LayerImage.CELL_RESOLUTION;
-		pixelBrushY = cellBrushY * LayerImage.CELL_RESOLUTION + LayerImage.CELL_RESOLUTION - 1;
+		pixelBrushX = DELTA + cellBrushX * LayerImage.CELL_RESOLUTION;
+		pixelBrushY = DELTA + cellBrushY * LayerImage.CELL_RESOLUTION + LayerImage.CELL_RESOLUTION - 1;
+
+		System.out.println("("+pixelBrushX+", "+pixelBrushY+")");
 
 		repaint();
 	}
@@ -223,19 +233,33 @@ public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Li
 
 		if(image != null) {
 
-			// Draw the background image
-			g.drawImage(image.background, 0, 0, null);
 
-			// Draw the brush in overlay (pixelBrushX; pixelBrushY) are the bottom left corner, need to correct to the top left
-			if(mouseBrush != null && pixelBrushX >= 0 && pixelBrushY >= 0)
-				g.drawImage(mouseBrush.background, pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1, null);
+			int index = getSelectedIndex();
+			if(index == 0) {
+				g.drawImage(image.background, DELTA, DELTA, null);
+				// Draw the brush in overlay (pixelBrushX; pixelBrushY) are the bottom left corner, need to correct to the top left
+				if(mouseBrush != null && pixelBrushX >= DELTA && pixelBrushY >= DELTA)
+					g.drawImage(mouseBrush.background, pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1, null);
+
+			}else if(index == 1){
+				g.drawImage(image.foreground, DELTA, DELTA, null);
+				// Draw the brush in overlay (pixelBrushX; pixelBrushY) are the bottom left corner, need to correct to the top left
+				if(mouseBrush != null && pixelBrushX >= 0 && pixelBrushY >= 0)
+					g.drawImage(mouseBrush.foreground, pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1, null);
+
+			}else if(index == 2) {
+				g.drawImage(resize(image.behavior, LayerImage.CELL_RESOLUTION), DELTA, DELTA, null);
+				// Draw the brush in overlay (pixelBrushX; pixelBrushY) are the bottom left corner, need to correct to the top left
+				if(mouseBrush != null && pixelBrushX >= 0 && pixelBrushY >= 0)
+					g.drawImage(resize(mouseBrush.behavior, LayerImage.CELL_RESOLUTION), pixelBrushX, pixelBrushY - mouseBrush.pixelHeight + 1, null);
+			}
 
 			//draw the grid (all the row borders and then all the col borders)
 			for (int i = 0; i <= image.pixelHeight / LayerImage.CELL_RESOLUTION; i++) {
-				g.drawLine(0, i * LayerImage.CELL_RESOLUTION, image.pixelWidth, i * LayerImage.CELL_RESOLUTION);
+				g.drawLine(DELTA, DELTA + i * LayerImage.CELL_RESOLUTION, DELTA+image.pixelWidth, DELTA+i * LayerImage.CELL_RESOLUTION);
 			}
 			for (int j = 0; j <= image.pixelWidth / LayerImage.CELL_RESOLUTION; j++) {
-				g.drawLine(j * LayerImage.CELL_RESOLUTION, 0, j * LayerImage.CELL_RESOLUTION, image.pixelHeight);
+				g.drawLine(DELTA + j * LayerImage.CELL_RESOLUTION, DELTA, DELTA + j * LayerImage.CELL_RESOLUTION, DELTA+image.pixelHeight);
 			}
 		}
 	}
@@ -299,5 +323,21 @@ public class GridPanel extends JPanel implements Menu.Listener, BrushDropList.Li
 		tool = newTool;
 		setCursor(Toolkit.getDefaultToolkit().createCustomCursor(newTool.getScaledImage(
 		        LayerImage.CELL_RESOLUTION, LayerImage.CELL_RESOLUTION), new Point(0,0),"tool cursor"));
+	}
+
+
+	private static BufferedImage resize(BufferedImage img, int factor) {
+
+		int newW = img.getWidth()*factor;
+		int newH = img.getHeight() * factor;
+
+		Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+		BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+		Graphics2D g2d = dimg.createGraphics();
+		g2d.drawImage(tmp, 0, 0, null);
+		g2d.dispose();
+
+		return dimg;
 	}
 }

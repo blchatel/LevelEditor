@@ -4,7 +4,6 @@ import ch.epfl.blchatel.leveleditor.LayerImage;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.MouseAdapter;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -18,9 +17,10 @@ import java.util.List;
 public class BrushDropList extends JPanel {
 
     /// The local binary resource brush path
-    private final static String BRUSHES_BACKGROUND_PATH = "Brushes/Background/";
-    private final static String BRUSHES_FOREGROUND_PATH = "Brushes/Foreground/";
-    private final static String BRUSHES_BEHAVIOR_PATH = "Brushes/Behavior/";
+    private final static String BRUSHES_BACKGROUND_PATH = "Brushes/Backgrounds/";
+    private final static String BRUSHES_FOREGROUND_PATH = "Brushes/Foregrounds/";
+    private final static String BRUSHES_BEHAVIOR_PATH = "Brushes/Behaviors/";
+
 
     /// Listener interface to react to brush selection
     public interface Listener{
@@ -134,11 +134,24 @@ public class BrushDropList extends JPanel {
             }
         });
 
+        Dimension d1 = new Dimension(d.width, (int)(d.height*0.05));
+        Dimension d2 = new Dimension(d.width, (int)(d.height*0.95));
+
+        JPanel checkboxPanel = new JPanel();
+        checkboxPanel.add(new JCheckBox("Background", true));
+        checkboxPanel.add(new JCheckBox("Foreground", true));
+        checkboxPanel.add(new JCheckBox("Behavior", true));
+        checkboxPanel.setSize(d1);
+        checkboxPanel.setMinimumSize(d1);
+        checkboxPanel.setMaximumSize(d1);
+        checkboxPanel.setPreferredSize(d1);
+        add(checkboxPanel);
+
         JScrollPane scroll = new JScrollPane(list);
-        scroll.setSize(d);
-        scroll.setMinimumSize(d);
-        scroll.setMaximumSize(d);
-        scroll.setPreferredSize(d);
+        scroll.setSize(d2);
+        scroll.setMinimumSize(d2);
+        scroll.setMaximumSize(d2);
+        scroll.setPreferredSize(d2);
         add(scroll);
     }
 
