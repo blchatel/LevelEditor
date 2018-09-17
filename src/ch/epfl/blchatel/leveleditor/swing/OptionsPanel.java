@@ -17,8 +17,8 @@ import java.util.Objects;
 class OptionsPanel extends JPanel {
 
     /// Default options values
-    public final static int DEFAULT_DRAG_X = 16;
-    public final static int DEFAULT_DRAG_Y = 16;
+    public final static int DEFAULT_DRAG_X = LayerImage.CELL_RESOLUTION;
+    public final static int DEFAULT_DRAG_Y = LayerImage.CELL_RESOLUTION;
     public final static Tool DEFAULT_TOOL = Tool.BRUSH;
 
 

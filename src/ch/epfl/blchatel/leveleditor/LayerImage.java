@@ -22,7 +22,7 @@ import java.util.Objects;
 public class LayerImage {
 
     /// The icon resolution in pixel
-    public final static int CELL_RESOLUTION = 16;
+    public final static int CELL_RESOLUTION = 64;
     private final static int ICON_RESOLUTION = 64;
     private final static int ICON_GAP = 5;
 

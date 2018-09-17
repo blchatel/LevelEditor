@@ -140,7 +140,7 @@ class DisplayPanel extends JTabbedPane {
 			deltaDragY = OptionsPanel.DEFAULT_DRAG_Y;
 			tool = OptionsPanel.DEFAULT_TOOL;
 			setCursor(Toolkit.getDefaultToolkit().createCustomCursor(tool.getScaledImage(
-					LayerImage.CELL_RESOLUTION, LayerImage.CELL_RESOLUTION), new Point(0, 0), "tool cursor"));
+					16, 16), new Point(0, 0), "tool cursor"));
 
 			// Add the three display tab
 
@@ -389,7 +389,7 @@ class DisplayPanel extends JTabbedPane {
 
 				// Draw the brush in overlay (pixelBrushX; pixelBrushY) are the bottom left corner, need to correct to the top left
 				if (currentDisplayedBrush != null && mouseBrush != null && pixelBrushX >= PAD && pixelBrushY >= PAD)
-					g.drawImage(currentDisplayedBrush, pixelBrushX, pixelBrushY - currentDisplayedBrush.getHeight() + 1, null);
+					g.drawImage(currentDisplayedBrush, pixelBrushX, pixelBrushY - currentDisplayedBrush.getHeight(), null);
 
 				//draw the grid (all the row borders and then all the col borders)
 
@@ -489,7 +489,7 @@ class DisplayPanel extends JTabbedPane {
 		public void onToolChange(OptionsPanel.Tool newTool) {
 			tool = newTool;
 			setCursor(Toolkit.getDefaultToolkit().createCustomCursor(newTool.getScaledImage(
-					LayerImage.CELL_RESOLUTION, LayerImage.CELL_RESOLUTION), new Point(0, 0), "tool cursor"));
+					16, 16), new Point(0, 0), "tool cursor"));
 		}
 
 	}
