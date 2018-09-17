@@ -183,16 +183,18 @@ class DisplayPanel extends JTabbedPane {
 				@Override
 				public void mousePressed(MouseEvent e) {
 
-					if (image != null && mouseBrush != null && isIn(e.getX(), e.getY())) {
+					if (image != null && isIn(e.getX(), e.getY())) {
 
 						if (SwingUtilities.isLeftMouseButton(e))
 						switch (tool) {
 							case BRUSH:
+								if(mouseBrush == null) break;
 								drawBrush(cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 								lastDrawX = pixelBrushX;
 								lastDrawY = pixelBrushY;
 								break;
 							case FILL:
+								if(mouseBrush == null) break;
 								fillBrush(cellBrushX, cellBrushY - mouseBrush.cellHeight + 1);
 								break;
 							case ZOOM:

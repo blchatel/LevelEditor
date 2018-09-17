@@ -4,6 +4,11 @@ import ch.epfl.blchatel.leveleditor.LayerImage;
 
 import java.awt.*;
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -83,8 +88,9 @@ public class BrushDropList extends JPanel {
         File[] behaviorFiles = behaviorFolder.listFiles();
 
         // Init the map and the list
-        List<String> nameList = new LinkedList<>();
         brushesMap = new HashMap<>();
+        Node brushesTree = new Node("Brushes", "Brushes");
+
 
         // Add all png files from the folder
         if(backgroundFiles == null || foregroundFiles == null || behaviorFiles == null){
@@ -120,34 +126,15 @@ public class BrushDropList extends JPanel {
                        foregroundImage = new ImageIcon(foregroundFile.getAbsolutePath()).getImage();
                     }
 
-                    String name = backgroundFile.getName().replaceFirst("[.][^.]+$", "");
+                    String name = backgroundFile.getName().toLowerCase();
                     brushesMap.put(name, new LayerImage(backgroundImage, foregroundImage, behaviorImage));
-                    nameList.add(name);
+                    brushesTree.addChild(name, name);
                 }
             }
         }
-        // Sort the list
-        nameList.sort(String::compareTo);
-
-        // Create the JList with a custom ListRenderer
-        JList<Object> list = new JList<>(nameList.toArray());
-        list.setCellRenderer(new BrushesListRenderer());
-        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        list.setBackground(UIManager.getColor ( "Panel.background" ));
-
-        list.addListSelectionListener(listSelectionEvent -> {
-            boolean adjust = listSelectionEvent.getValueIsAdjusting();
-            if (!adjust) {
-                JList list1 = (JList) listSelectionEvent.getSource();
-                Object selectionValue = list1.getSelectedValue();
-                for(Listener l : listeners){
-                    l.onBrushSelected(brushesMap.get(selectionValue));
-                }
-            }
-        });
 
         Dimension d1 = new Dimension(d.width, (int)(d.height*0.05));
-        Dimension d2 = new Dimension(d.width, (int)(d.height*0.95));
+        Dimension d2 = new Dimension(d.width-10, (int)(d.height*0.85));
 
         JPanel checkboxPanel = new JPanel();
         backgroundCheckBox = new JCheckBox("Background", BACKGROUND_CHECKBOX_DEFAULT);
@@ -174,27 +161,131 @@ public class BrushDropList extends JPanel {
         checkboxPanel.setPreferredSize(d1);
         add(checkboxPanel);
 
-        JScrollPane scroll = new JScrollPane(list);
+
+        // Create the JTable with a custom ListRenderer
+        DefaultMutableTreeNode root = createNodes(brushesTree, null);
+
+        JTree tree = new JTree(root);
+        tree.setCellRenderer(new BrushesTreeRenderer());
+        tree.addTreeSelectionListener(e -> {
+            JTree tree1 = (JTree) e.getSource();
+            String selectionValue = ((Tree)((DefaultMutableTreeNode)tree1.getSelectionPath().getLastPathComponent()).getUserObject()).path;
+            for (Listener l : listeners) {
+                l.onBrushSelected(brushesMap.get(selectionValue));
+            }
+        });
+
+
+        JScrollPane scroll = new JScrollPane(tree);
         scroll.setSize(d2);
         scroll.setMinimumSize(d2);
         scroll.setMaximumSize(d2);
         scroll.setPreferredSize(d2);
         add(scroll);
+
     }
 
-    private class BrushesListRenderer extends DefaultListCellRenderer {
+    private static DefaultMutableTreeNode createNodes(Node brushTree, DefaultMutableTreeNode parent) {
 
-        private final Font font = new Font("helvitica", Font.BOLD, 18);
+        DefaultMutableTreeNode that = new DefaultMutableTreeNode(brushTree);
+        if(parent != null)
+            parent.add(that);
+
+        for(Map.Entry<String, Tree> child : brushTree.children.entrySet()){
+
+            Tree t = child.getValue();
+
+            if(t instanceof Node){
+                createNodes((Node)t, that);
+            }else{
+                DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(t);
+                that.add(leaf);
+            }
+        }
+
+        return that;
+    }
+
+
+    private class BrushesTreeRenderer extends DefaultTreeCellRenderer {
+
+        private final Font font = new Font("helvitica", Font.PLAIN, 12);
+        private final Border selectedBorder = BorderFactory.createLineBorder(Color.BLACK);
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            label.setHorizontalTextPosition(JLabel.RIGHT);
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            //Component component = super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+            DefaultMutableTreeNode n = (DefaultMutableTreeNode)value;
+            Tree t = (Tree)n.getUserObject();
+            JLabel label = new JLabel();
             label.setFont(font);
-            LayerImage image = brushesMap.get(value);
-            label.setIcon(image.vsIcon);
-            label.setText(label.getText() + " ("+image.cellWidth+"x"+image.cellHeight+")");
+            label.setText(t.name);
+            label.setForeground(Color.GRAY);
+            if(leaf){
+                LayerImage image = brushesMap.get(t.path);
+                label.setIcon(image.vsIcon);
+                label.setText(label.getText() + " ("+image.cellWidth+"x"+image.cellHeight+")");
+                label.setText(label.getText());
+            }
+            if(selected) {
+                label.setBorder(selectedBorder);
+                label.setForeground(Color.BLACK);
+            }
             return label;
         }
     }
+
+
+    private abstract class Tree {
+        final String name;
+        final String path;
+        Tree(String name, String path){
+            this.name = name;
+            this.path = path;
+        }
+    }
+
+    private class Node extends Tree{
+
+        final Map<String, Tree> children;
+
+        Node(String name, String path){
+            super(name, path);
+            children = new TreeMap<>();
+        }
+
+        void addChild(String fullPath, String pathLeft) {
+
+            // Get the first '.' index
+            int i1 = pathLeft.indexOf('.');
+            // if no '.' found -> it is a brush
+            if (i1 == -1)
+                return;
+            if(i1 == pathLeft.lastIndexOf('.') && pathLeft.toLowerCase().endsWith(".png")){
+                children.put(pathLeft, new Leaf(pathLeft, fullPath));
+                return;
+            }
+
+            // Otherwise we have a prefix (Node) and child path
+            String prefix = pathLeft.substring(0, i1);
+            String suffix = pathLeft.substring(i1+1);
+
+            Tree parent = children.get(prefix);
+
+            if(parent == null){
+                parent = new Node(prefix, path);
+                children.put(prefix, parent);
+            }
+
+            ((Node)parent).addChild(fullPath, suffix);
+        }
+    }
+
+    private class Leaf extends Tree{
+
+        Leaf(String name, String path){
+            super(name, path);
+        }
+    }
+
 }
