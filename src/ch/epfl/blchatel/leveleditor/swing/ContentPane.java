@@ -1,6 +1,6 @@
 package ch.epfl.blchatel.leveleditor.swing;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 
 /**
@@ -17,7 +17,7 @@ public class ContentPane extends JPanel {
 
 	/// The three components
 	private final Menu menu;
-	private final GridPanel grid;
+	private final DisplayPanel grid;
 	private final ToolsPanel tools;
 
 	/**
@@ -38,26 +38,19 @@ public class ContentPane extends JPanel {
 
 		// Define the Grid
 		final Dimension gridDimension = new Dimension((int)(d.width* X_SEPARATION), d.height);
-		grid = new GridPanel(gridDimension);
+		grid = new DisplayPanel(gridDimension);
 		add(grid, BorderLayout.CENTER);
 
 		// Define the Menu
 		menu = new Menu();
-		menu.addListener(grid);
+		menu.addListener(grid.getMenuListener());
 		add(menu, BorderLayout.NORTH);
 
 		// Define the Tools
 		final Dimension toolsDimension = new Dimension((int)(d.width*(1.0- X_SEPARATION)), d.height);
 		tools= new ToolsPanel(toolsDimension);
-		tools.addFileDropListListener(grid);
-		tools.addOptionsListener(grid);
+		tools.addFileDropListListener(grid.getBrushDropListListener());
+		tools.addOptionsListener(grid.getOptionsPanelListener());
 		add(tools, BorderLayout.EAST);
-	}
-
-	@Override
-	public void paintComponent(Graphics g){
-	    super.paintComponent(g);
-	    this.tools.repaint();
-	    this.grid.repaint();
 	}
 }

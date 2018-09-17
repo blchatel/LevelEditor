@@ -4,8 +4,6 @@ import ch.epfl.blchatel.leveleditor.LayerImage;
 
 import java.awt.*;
 import javax.swing.*;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -22,6 +20,10 @@ public class BrushDropList extends JPanel {
     private final static String BRUSHES_BACKGROUND_PATH = "Brushes/Backgrounds/";
     private final static String BRUSHES_FOREGROUND_PATH = "Brushes/Foregrounds/";
     private final static String BRUSHES_BEHAVIOR_PATH = "Brushes/Behaviors/";
+
+    public final static boolean BACKGROUND_CHECKBOX_DEFAULT = true;
+    public final static boolean FOREGROUND_CHECKBOX_DEFAULT = true;
+    public final static boolean BEHAVIOR_CHECKBOX_DEFAULT = true;
 
 
     /// Listener interface to react to brush selection
@@ -148,19 +150,19 @@ public class BrushDropList extends JPanel {
         Dimension d2 = new Dimension(d.width, (int)(d.height*0.95));
 
         JPanel checkboxPanel = new JPanel();
-        backgroundCheckBox = new JCheckBox("Background", true);
+        backgroundCheckBox = new JCheckBox("Background", BACKGROUND_CHECKBOX_DEFAULT);
         backgroundCheckBox.addItemListener(e -> {
             for(Listener l : listeners)
                 l.onBackgroundToggeled(backgroundCheckBox.isSelected());
         });
         checkboxPanel.add(backgroundCheckBox);
-        foregroundCheckBox = new JCheckBox("Foreground", true);
+        foregroundCheckBox = new JCheckBox("Foreground", FOREGROUND_CHECKBOX_DEFAULT);
         foregroundCheckBox.addItemListener(e -> {
             for(Listener l : listeners)
                 l.onForegroundToggeled(foregroundCheckBox.isSelected());
         });
         checkboxPanel.add(foregroundCheckBox);
-        behaviorCheckBox = new JCheckBox("Behavior", true);
+        behaviorCheckBox = new JCheckBox("Behavior", BEHAVIOR_CHECKBOX_DEFAULT);
         behaviorCheckBox.addItemListener(e -> {
             for(Listener l : listeners)
                 l.onBehaviorToggeled(behaviorCheckBox.isSelected());
