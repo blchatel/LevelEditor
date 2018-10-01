@@ -167,12 +167,13 @@ public class BrushDropList extends JPanel {
         tree.setCellRenderer(new BrushesTreeRenderer());
         tree.addTreeSelectionListener(e -> {
             JTree tree1 = (JTree) e.getSource();
-            String selectionValue = ((Tree)((DefaultMutableTreeNode)tree1.getSelectionPath().getLastPathComponent()).getUserObject()).path;
-            for (Listener l : listeners) {
-                l.onBrushSelected(brushesMap.get(selectionValue));
+            if(tree1 != null && tree1.getSelectionPath() != null) {
+                String selectionValue = ((Tree) ((DefaultMutableTreeNode) tree1.getSelectionPath().getLastPathComponent()).getUserObject()).path;
+                for (Listener l : listeners) {
+                    l.onBrushSelected(brushesMap.get(selectionValue));
+                }
             }
         });
-
 
         JScrollPane scroll = new JScrollPane(tree);
         scroll.setSize(d2);
@@ -180,7 +181,6 @@ public class BrushDropList extends JPanel {
         scroll.setMaximumSize(d2);
         scroll.setPreferredSize(d2);
         add(scroll);
-
     }
 
     private static DefaultMutableTreeNode createNodes(Node brushTree, DefaultMutableTreeNode parent) {

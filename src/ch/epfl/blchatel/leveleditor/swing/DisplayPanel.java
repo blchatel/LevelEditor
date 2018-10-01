@@ -59,9 +59,10 @@ class DisplayPanel extends JTabbedPane {
 		index = 0;
 
 		gridPanel = new GridPanel();
-
+		JScrollPane scrollGridPanel = new JScrollPane(gridPanel);
+		scrollGridPanel.getVerticalScrollBar().setUnitIncrement(16);
 		// Add the three tabs
-		addTab("Background", new JScrollPane(gridPanel));
+		addTab("Background", scrollGridPanel);
 		addTab("Foreground", null);
 		addTab("Behavior", null);
 		addChangeListener(e -> {
@@ -402,9 +403,17 @@ class DisplayPanel extends JTabbedPane {
 
 				for (int i = 0; i <= nRows; i++) {
 					g.drawLine(PAD, PAD + (int) (i * magnifiedResolutionY), PAD + magnifiedWidth, PAD + (int) (i * magnifiedResolutionY));
+					if(i != 0){
+						g.drawString(""+(nRows-i), PAD/2, PAD + (int) (i * magnifiedResolutionY));
+						g.drawString(""+(nRows-i), PAD + magnifiedWidth +5, PAD + (int) (i * magnifiedResolutionY));
+					}
 				}
 				for (int j = 0; j <= nCols; j++) {
 					g.drawLine(PAD + (int) (j * magnifiedResolutionX), PAD, PAD + (int) (j * magnifiedResolutionX), PAD + magnifiedHeight);
+					if(j != nCols){
+						g.drawString(""+(j), PAD + (int) (j * magnifiedResolutionX), PAD-5);
+						g.drawString(""+(j), PAD + (int) (j * magnifiedResolutionX), PAD + PAD/2 + magnifiedHeight);
+					}
 				}
 			}
 		}

@@ -1,5 +1,6 @@
 package ch.epfl.blchatel.leveleditor;
 
+import ch.epfl.blchatel.leveleditor.swing.ColorMap;
 import ch.epfl.blchatel.leveleditor.swing.ComposedIcon;
 
 import javax.imageio.ImageIO;
@@ -14,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -180,13 +182,18 @@ public class LayerImage {
 
     public static boolean saveToFile(LayerImage image, File lveFile) {
 
+        if(image == null)
+            return false;
+
         if (lveFile != null && lveFile.getName().toLowerCase().endsWith(".lve")) {
             try {
                 String absolutePath = lveFile.getAbsolutePath();
                 String filePath = absolutePath.substring(0, absolutePath.lastIndexOf(File.separator) + 1);
                 String fileName = lveFile.getName().replaceFirst("[.][^.]+$", "");
 
-                List<String> lines = Arrays.asList(lveFile.getName(), "Background/" + fileName + ".png", "Foreground/" + fileName + ".png", "Behavior/" + fileName + ".png");
+                List<String> lines = new ArrayList<>();
+                lines.addAll(Arrays.asList(lveFile.getName(), "Background/" + fileName + ".png", "Foreground/" + fileName + ".png", "Behavior/" + fileName + ".png", "Info:"));
+                lines.addAll(Arrays.asList(ColorMap.createMap(image)));
 
                 Path file = Paths.get(lveFile.getAbsolutePath());
                 Files.write(file, lines, Charset.forName("UTF-8"));

@@ -12,6 +12,11 @@ import java.awt.*;
  */
 public class LevelEditor {
 
+    public final static String appName = "Level Editor";
+    public final static String versionId = "v1.0.1";
+    public final static int version = 1;
+
+
     // Windows Dimension
     private final static Dimension WINDOW_DIMENSION = new Dimension(1200, 800);
 

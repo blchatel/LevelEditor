@@ -1,6 +1,7 @@
 package ch.epfl.blchatel.leveleditor.swing;
 
 import ch.epfl.blchatel.leveleditor.LayerImage;
+import ch.epfl.blchatel.leveleditor.LevelEditor;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -115,7 +116,8 @@ public class Menu extends JMenuBar {
                     chooser.setAcceptAllFileFilterUsed(false);
                     int returnVal = chooser.showSaveDialog(fileMenu);
                     if(returnVal == JFileChooser.APPROVE_OPTION) {
-                        l.onSaveAsLVE(chooser.getSelectedFile());
+                        if(!l.onSaveAsLVE(chooser.getSelectedFile()))
+                            JOptionPane.showMessageDialog(null,"the save fails", "Error", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -140,5 +142,18 @@ public class Menu extends JMenuBar {
 		fileMenu.add(saveAsFileItem);
 
 		add(fileMenu);
+
+
+		final JMenu helpMenu = new JMenu("Help");
+
+		JMenuItem aboutHelpItem = new JMenuItem("About");
+        aboutHelpItem.addActionListener(e -> JOptionPane.showMessageDialog(null, LevelEditor.appName + " " + LevelEditor.versionId, "About", JOptionPane.INFORMATION_MESSAGE));
+        helpMenu.add(aboutHelpItem);
+
+        JMenuItem colorMapHelpItem = new JMenuItem("Color Map");
+        colorMapHelpItem.addActionListener(e -> ColorMap.showMap());
+        helpMenu.add(colorMapHelpItem);
+
+        add(helpMenu);
 	}
 }
