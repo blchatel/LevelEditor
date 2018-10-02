@@ -1,5 +1,8 @@
 package ch.epfl.blchatel.leveleditor;
 
+import ch.epfl.blchatel.leveleditor.io.DefaultFileSystem;
+import ch.epfl.blchatel.leveleditor.io.FileSystem;
+import ch.epfl.blchatel.leveleditor.io.ResourceFileSystem;
 import ch.epfl.blchatel.leveleditor.swing.ColorMap;
 import ch.epfl.blchatel.leveleditor.swing.ComposedIcon;
 
@@ -18,7 +21,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 
 public class LayerImage {
@@ -36,9 +38,8 @@ public class LayerImage {
     public final int pixelWidth, pixelHeight, cellWidth, cellHeight;
 
     private static ImageIcon buildNullIcon(){
-        ClassLoader cl = LayerImage.class.getClassLoader();
-        File file = new File(Objects.requireNonNull(cl.getResource("icons/alpha_64.png")).getFile());
-        return new ImageIcon(file.getAbsolutePath());
+        FileSystem fileSystem = new ResourceFileSystem(DefaultFileSystem.INSTANCE);
+        return new ImageIcon(fileSystem.readImage("icons/alpha_64.png"));
     }
 
     /**
@@ -50,9 +51,17 @@ public class LayerImage {
      */
     public LayerImage(Image background, Image foreground, Image behavior) {
 
+        if(background == null || behavior == null) {
+            throw new IllegalArgumentException("background and behavior images should not be null");
+        }
+
         this.background = LayerImage.toBufferedImage(background);
         this.foreground = foreground == null ? null : LayerImage.toBufferedImage(foreground);
         this.behavior = LayerImage.toBufferedImage(behavior);
+
+        if(this.background == null || this.behavior == null) {
+            throw new IllegalArgumentException("background or behavior encounter problem while converting into buffered image");
+        }
 
         icon = new ImageIcon(background.getScaledInstance(ICON_RESOLUTION, ICON_RESOLUTION, Image.SCALE_DEFAULT));
 
