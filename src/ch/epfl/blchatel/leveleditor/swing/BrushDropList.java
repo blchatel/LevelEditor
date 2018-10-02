@@ -1,13 +1,13 @@
 package ch.epfl.blchatel.leveleditor.swing;
 
 import ch.epfl.blchatel.leveleditor.LayerImage;
+import ch.epfl.blchatel.leveleditor.io.*;
 
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
-import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -19,15 +19,9 @@ import java.util.List;
  */
 public class BrushDropList extends JPanel {
 
-    /// The local binary resource brush path
-    private final static String BRUSHES_BACKGROUND_PATH = "Brushes/Backgrounds/";
-    private final static String BRUSHES_FOREGROUND_PATH = "Brushes/Foregrounds/";
-    private final static String BRUSHES_BEHAVIOR_PATH = "Brushes/Behaviors/";
-
     public final static boolean BACKGROUND_CHECKBOX_DEFAULT = true;
     public final static boolean FOREGROUND_CHECKBOX_DEFAULT = true;
     public final static boolean BEHAVIOR_CHECKBOX_DEFAULT = true;
-
 
     /// Listener interface to react to brush selection
     public interface Listener{
@@ -76,59 +70,25 @@ public class BrushDropList extends JPanel {
         // - Init listeners list
         listeners = new LinkedList<>();
 
-        // Read the local brush path
-        ClassLoader cl = BrushDropList.class.getClassLoader();
-        File backgroundFolder = new File(Objects.requireNonNull(cl.getResource(BRUSHES_BACKGROUND_PATH)).getFile());
-        File[] backgroundFiles = backgroundFolder.listFiles();
-        File foregroundFolder = new File(Objects.requireNonNull(cl.getResource(BRUSHES_FOREGROUND_PATH)).getFile());
-        File[] foregroundFiles = foregroundFolder.listFiles();
-        File behaviorFolder = new File(Objects.requireNonNull(cl.getResource(BRUSHES_BEHAVIOR_PATH)).getFile());
-        File[] behaviorFiles = behaviorFolder.listFiles();
-
         // Init the map and the list
         brushesMap = new HashMap<>();
         Node brushesTree = new Node("Brushes", "Brushes");
 
 
-        // Add all png files from the folder
-        if(backgroundFiles == null || foregroundFiles == null || behaviorFiles == null){
-            System.out.println("At least one the following folders is not found : \n" +
-                    BRUSHES_BACKGROUND_PATH + ",\n" + BRUSHES_FOREGROUND_PATH + ",\n" + BRUSHES_BEHAVIOR_PATH);
-        }else if(backgroundFiles.length != behaviorFiles.length){
-            System.out.println("Please check brush, some are missing : \n" +
-            "#Background: "+ backgroundFiles.length +", #Foreground: "+ foregroundFiles.length + ", #behavior: "+behaviorFiles.length);
-        }
-        else{
-            Comparator<File> fileComparator = Comparator.comparing(File::getName);
-            Arrays.sort(backgroundFiles, fileComparator);
-            Arrays.sort(behaviorFiles, fileComparator);
-            Arrays.sort(foregroundFiles, fileComparator);
+        BrushesRes[] resources = BrushesRes.values();
+        Comparator<BrushesRes> fileComparator = Comparator.comparing(o -> o.name);
+        Arrays.sort(resources, fileComparator);
 
-            int foregroundIndex = 0;
-            for(int i = 0; i < backgroundFiles.length; i++){
+        FileSystem fileSystem = new ResourceFileSystem(DefaultFileSystem.INSTANCE);
 
-                File backgroundFile = backgroundFiles[i];
-                File foregroundFile = foregroundIndex >= foregroundFiles.length ? null : foregroundFiles[foregroundIndex];
-                File behaviorFile = behaviorFiles[i];
+        for (BrushesRes br : resources) {
+            Image backgroundImage = fileSystem.readImage(br.background);
+            Image behaviorImage = fileSystem.readImage(br.behavior);
+            Image foregroundImage = fileSystem.readImage(br.foreground);
 
-                if(!backgroundFile.getName().equals(behaviorFile.getName())){
-                    System.out.println("Brush name must be the sames int Background and Behavior folders");
-                    break;
-                }else if((backgroundFile.isFile() && backgroundFile.getName().toLowerCase().endsWith(".png"))){
-
-                    Image backgroundImage = new ImageIcon(backgroundFile.getAbsolutePath()).getImage();
-                    Image behaviorImage = new ImageIcon(behaviorFile.getAbsolutePath()).getImage();
-                    Image foregroundImage = null;
-                    if(foregroundFile != null && backgroundFile.getName().equals(foregroundFile.getName())){
-                       foregroundIndex++;
-                       foregroundImage = new ImageIcon(foregroundFile.getAbsolutePath()).getImage();
-                    }
-
-                    String name = backgroundFile.getName().toLowerCase();
-                    brushesMap.put(name, new LayerImage(backgroundImage, foregroundImage, behaviorImage));
-                    brushesTree.addChild(name, name);
-                }
-            }
+            String name = br.name.toLowerCase();
+            brushesMap.put(name, new LayerImage(backgroundImage, foregroundImage, behaviorImage));
+            brushesTree.addChild(name, name);
         }
 
         Dimension d1 = new Dimension(d.width, (int)(d.height*0.05));
