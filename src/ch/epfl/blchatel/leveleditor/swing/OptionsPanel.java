@@ -1,6 +1,9 @@
 package ch.epfl.blchatel.leveleditor.swing;
 
 import ch.epfl.blchatel.leveleditor.LayerImage;
+import ch.epfl.blchatel.leveleditor.io.DefaultFileSystem;
+import ch.epfl.blchatel.leveleditor.io.FileSystem;
+import ch.epfl.blchatel.leveleditor.io.ResourceFileSystem;
 
 import javax.swing.*;
 import java.awt.*;
@@ -63,16 +66,10 @@ class OptionsPanel extends JPanel {
         private final ImageIcon icon;
 
         Tool(String iconPath){
-            File file = null;
-            try {
-                ClassLoader cl = OptionsPanel.class.getClassLoader();
-                file = new File(Objects.requireNonNull(cl.getResource(iconPath)).getFile());
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-            assert file != null;
-            icon = new ImageIcon(file.getAbsolutePath());
+            FileSystem fileSystem = new ResourceFileSystem(DefaultFileSystem.INSTANCE);
+            icon = new ImageIcon(fileSystem.readImage(iconPath));
         }
+
         /**@return (ImageIcon): The tool's icon */
         public ImageIcon getIcon() {
             return icon;
