@@ -192,7 +192,7 @@ public class LayerImage {
                 String fileName = lveFile.getName().replaceFirst("[.][^.]+$", "");
 
                 List<String> lines = new ArrayList<>();
-                lines.addAll(Arrays.asList(lveFile.getName(), "Background/" + fileName + ".png", "Foreground/" + fileName + ".png", "Behavior/" + fileName + ".png", "Info:"));
+                lines.addAll(Arrays.asList(lveFile.getName(), "backgrounds/" + fileName + ".png", "foregrounds/" + fileName + ".png", "behaviors/" + fileName + ".png", "Info:"));
                 lines.addAll(Arrays.asList(ColorMap.createMap(image)));
 
                 Path file = Paths.get(lveFile.getAbsolutePath());

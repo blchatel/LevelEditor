@@ -23,9 +23,10 @@ public class Menu extends JMenuBar {
 	public interface Listener{
         /**
          * React to an opened Image
+         * @param file (File): the opened file
          * @param lve (LayerImage): the opened LayeredImage
          */
-		void onOpenLVE(LayerImage lve);
+		void onOpenLVE(File file, LayerImage lve);
         /**
          * React to the creation of a new LayeredImage
          * @param lve (LayerImage): the opened LayeredImage
@@ -91,15 +92,18 @@ public class Menu extends JMenuBar {
 		// - Open Item
 		JMenuItem openFileItem = new JMenuItem("Open");
 		openFileItem.addActionListener(e -> {
-            final JFileChooser chooser = new JFileChooser();
+            File workingDirectory = new File(System.getProperty("user.dir"));
+            final JFileChooser chooser = new JFileChooser(workingDirectory);
             final FileNameExtensionFilter filter = new FileNameExtensionFilter("Level Editor Files", "lve");
             chooser.setFileFilter(filter);
             chooser.setAcceptAllFileFilterUsed(false);
             int returnVal = chooser.showOpenDialog(fileMenu);
             if(returnVal == JFileChooser.APPROVE_OPTION) {
 
+                File file = chooser.getSelectedFile();
+
                 for(Listener l : listeners){
-                    l.onOpenLVE(LayerImage.getFromFile(chooser.getSelectedFile()));
+                    l.onOpenLVE(file, LayerImage.getFromFile(file));
                 }
             }
         });
@@ -110,7 +114,8 @@ public class Menu extends JMenuBar {
 		saveFileItem.addActionListener(e -> {
             for(Listener l : listeners){
                 if(!l.onSaveLVE()){
-                    final JFileChooser chooser = new JFileChooser();
+                    File workingDirectory = new File(System.getProperty("user.dir"));
+                    final JFileChooser chooser = new JFileChooser(workingDirectory);
                     final FileNameExtensionFilter filter = new FileNameExtensionFilter("Level Editor Images", "lve");
                     chooser.setFileFilter(filter);
                     chooser.setAcceptAllFileFilterUsed(false);
@@ -127,7 +132,8 @@ public class Menu extends JMenuBar {
 		// - Save As Item
 		JMenuItem saveAsFileItem = new JMenuItem("Save As");
 		saveAsFileItem.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
+            File workingDirectory = new File(System.getProperty("user.dir"));
+            final JFileChooser chooser = new JFileChooser(workingDirectory);
             FileNameExtensionFilter filter = new FileNameExtensionFilter("Level Editor Images", "lve");
             chooser.setFileFilter(filter);
             chooser.setAcceptAllFileFilterUsed(false);

@@ -1,7 +1,10 @@
 package ch.epfl.blchatel.leveleditor.swing;
 
+import ch.epfl.blchatel.leveleditor.LayerImage;
+
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 /**
  * Main ContentPane.
@@ -52,5 +55,10 @@ public class ContentPane extends JPanel {
 		tools.addFileDropListListener(grid.getBrushDropListListener());
 		tools.addOptionsListener(grid.getOptionsPanelListener());
 		add(tools, BorderLayout.EAST);
+	}
+
+	public void initArgsDisplay(File file){
+		if(file != null)
+			grid.getMenuListener().onOpenLVE(file, LayerImage.getFromFile(file));
 	}
 }

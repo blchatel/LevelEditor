@@ -422,13 +422,13 @@ class DisplayPanel extends JTabbedPane {
 		/// GridPanel implements Menu.Listener
 
 		@Override
-		public void onOpenLVE(LayerImage lve) {
+		public void onOpenLVE(File file, LayerImage lve) {
 
 			if (!lve.isValid(MAX_CELL, MAX_CELL)) {
 				JOptionPane.showMessageDialog(this, "The image must be decomposed into cell of " +
 						LayerImage.CELL_RESOLUTION + "x" + LayerImage.CELL_RESOLUTION + " pixels (max 50x50 cells)");
 			} else {
-				saveFile = null;
+				saveFile = file;
 				this.image = lve;
 				computeDisplayedImage();
 			}
