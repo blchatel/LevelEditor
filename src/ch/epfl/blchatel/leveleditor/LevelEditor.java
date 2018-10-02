@@ -1,5 +1,6 @@
 package ch.epfl.blchatel.leveleditor;
 
+import ch.epfl.blchatel.leveleditor.io.*;
 import ch.epfl.blchatel.leveleditor.swing.ContentPane;
 
 import javax.swing.*;
@@ -23,7 +24,8 @@ public class LevelEditor {
 
     /**
      * Main Entry Point
-     * @param args (Array of String) : Arguments (not used)
+     * @param args (Array of String) : Arguments
+     *             [0] - absolute path a .lve file to open with the editor (optional)
      */
     public static void main(String[] args){
 
