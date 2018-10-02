@@ -5,7 +5,7 @@
 .mtj.tmp/
 
 # Package Files #
-*.jar
+#*.jar
 *.war
 *.ear
 
@@ -53,6 +53,7 @@ hs_err_pid*
 
 # IntelliJ
 /out/
+/src/META-INF/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
