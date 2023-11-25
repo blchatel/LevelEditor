@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="LevelEditor">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/levelEditor-v1-0-1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/samples.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
